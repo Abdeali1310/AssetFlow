@@ -40,7 +40,7 @@ export async function middleware(request: NextRequest) {
   const isAuthPage = authPages.some((page) => pathname.startsWith(page));
 
   // If user is not signed in and trying to access protected routes, redirect to login
-  if (!user && !isAuthPage && pathname !== "/") {
+  if (!user && !isAuthPage && pathname !== "/" && !pathname.startsWith("/api")) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
