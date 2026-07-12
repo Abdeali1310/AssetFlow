@@ -14,17 +14,27 @@ const supabase = createClient(
 
 async function run() {
   console.log("Creating storage bucket 'asset-photos'...");
-  
-  // Try to create the bucket
-  const { data, error } = await supabase.storage.createBucket("asset-photos", {
+  const { data: data1, error: error1 } = await supabase.storage.createBucket("asset-photos", {
     public: true,
     allowedMimeTypes: ["image/*"],
   });
 
-  if (error) {
-    console.error("Bucket creation message:", error.message);
+  if (error1) {
+    console.error("asset-photos creation message:", error1.message);
   } else {
-    console.log("Bucket created successfully:", data);
+    console.log("asset-photos created successfully:", data1);
+  }
+
+  console.log("Creating storage bucket 'maintenance-photos'...");
+  const { data: data2, error: error2 } = await supabase.storage.createBucket("maintenance-photos", {
+    public: true,
+    allowedMimeTypes: ["image/*"],
+  });
+
+  if (error2) {
+    console.error("maintenance-photos creation message:", error2.message);
+  } else {
+    console.log("maintenance-photos created successfully:", data2);
   }
 }
 
