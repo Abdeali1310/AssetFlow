@@ -25,6 +25,7 @@ import type { UserRole } from "@/lib/types";
 
 interface SidebarProps {
   user: {
+    id: string;
     full_name: string;
     email: string;
     role: UserRole;

@@ -39,6 +39,7 @@ export default async function DashboardLayout({
     .eq("is_read", false);
 
   const userData = {
+    id: user.id,
     full_name: profile.full_name as string,
     email: profile.email as string,
     role: profile.role as UserRole,
