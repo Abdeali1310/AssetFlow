@@ -1,6 +1,6 @@
-"use client";
-
-import { useState, useTransition, useMemo } from "react";
+"use client"
+import { useState, useEffect, useTransition, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Plus, Edit2, CheckCircle, XCircle, Trash2, X, PlusCircle, User, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -92,6 +92,8 @@ export function OrgSetupClient({
   initialEmployees,
   eligibleHeads,
 }: OrgSetupClientProps) {
+  const router = useRouter();
+
   // --- Departments State ---
   const [departments, setDepartments] = useState<Department[]>(initialDepartments);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -126,6 +128,19 @@ export function OrgSetupClient({
   } | null>(null);
 
   const [isPending, startTransition] = useTransition();
+
+  // Synchronize state when initial props from server change
+  useEffect(() => {
+    setDepartments(initialDepartments);
+  }, [initialDepartments]);
+
+  useEffect(() => {
+    setCategories(initialCategories);
+  }, [initialCategories]);
+
+  useEffect(() => {
+    setEmployees(initialEmployees);
+  }, [initialEmployees]);
 
   // --- Department Handlers ---
   function openCreate() {
@@ -205,7 +220,7 @@ export function OrgSetupClient({
       }
 
       setIsSheetOpen(false);
-      window.location.reload();
+      router.refresh();
     });
   }
 
@@ -309,7 +324,7 @@ export function OrgSetupClient({
       }
 
       setIsCatSheetOpen(false);
-      window.location.reload();
+      router.refresh();
     });
   }
 
@@ -995,7 +1010,7 @@ export function OrgSetupClient({
         isOpen={promoteOpen}
         onOpenChange={setPromoteOpen}
         employee={promotingEmployee}
-        onSuccess={() => window.location.reload()}
+        onSuccess={() => router.refresh()}
       />
     </div>
   );
