@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Topbar } from "@/components/layout/Topbar";
+import { ToastSync } from "@/components/layout/ToastSync";
 import type { UserRole } from "@/lib/types";
 
 export default async function DashboardLayout({
@@ -46,6 +47,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-background">
+      <ToastSync />
       <Sidebar user={userData} unreadCount={unreadCount ?? 0} />
       <Topbar user={userData} unreadCount={unreadCount ?? 0} />
       <main className="ml-[260px] pt-16">
