@@ -33,6 +33,8 @@ import { AssetStatusBadge } from "@/components/assets/AssetStatusBadge";
 import { AssetForm } from "@/components/assets/AssetForm";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { AssetHistoryTimeline } from "@/components/assets/AssetHistoryTimeline";
+import { AllocateDialog } from "@/components/allocations/AllocateDialog";
+import { ReturnDialog } from "@/components/allocations/ReturnDialog";
 import { transitionAssetStatus } from "@/lib/actions/assets";
 import { canRegisterAssets } from "@/lib/permissions";
 import type { Asset, AssetCategory, Department, UserRole } from "@/lib/types";
@@ -63,6 +65,19 @@ export function AssetDetailClient({
 
   // Copy Tag State
   const [copied, setCopied] = useState(false);
+
+  // Allocation / Return Dialog states
+  const [isAllocateOpen, setIsAllocateOpen] = useState(false);
+  const [isReturnOpen, setIsReturnOpen] = useState(false);
+  const [isTransferOpen, setIsTransferOpen] = useState(false);
+  const [transferTarget, setTransferTarget] = useState<{ assetId: string; targetEmployeeId: string } | null>(null);
+
+  const handleOpenTransferRequest = (assetId: string, targetEmployeeId: string) => {
+    setTransferTarget({ assetId, targetEmployeeId });
+    setIsTransferOpen(true);
+    // Task 20 handles TransferRequestDialog. For now, show informational toast.
+    toast.info("Transfer request flow initiated. Complete implementation in Task 20.");
+  };
 
   // Confirm Status Dialog State
   const [confirmState, setConfirmState] = useState<{
@@ -432,13 +447,22 @@ export function AssetDetailClient({
               {/* Allocate Action (manager/admin, status=available) */}
               {isManager && asset.status === "available" && (
                 <Button
-                  onClick={() =>
-                    toast.info("Allocation flow will be implemented in Phase 6.")
-                  }
+                  onClick={() => setIsAllocateOpen(true)}
                   className="text-xs"
                 >
                   <PlusCircle className="mr-1.5 h-3.5 w-3.5" />
                   Allocate Asset
+                </Button>
+              )}
+
+              {/* Return Action (manager/admin, status=allocated) */}
+              {isManager && asset.status === "allocated" && (
+                <Button
+                  onClick={() => setIsReturnOpen(true)}
+                  className="text-xs"
+                >
+                  <PlusCircle className="mr-1.5 h-3.5 w-3.5 rotate-45" />
+                  Return Asset
                 </Button>
               )}
 
@@ -576,6 +600,26 @@ export function AssetDetailClient({
         variant={
           confirmState.targetStatus === "disposed" ? "destructive" : "default"
         }
+      />
+
+      {/* Allocate Asset Dialog */}
+      <AllocateDialog
+        open={isAllocateOpen}
+        onOpenChange={setIsAllocateOpen}
+        assetId={asset.id}
+        assetTag={asset.asset_tag}
+        assetName={asset.name}
+        onOpenTransferRequest={handleOpenTransferRequest}
+      />
+
+      {/* Return Asset Dialog */}
+      <ReturnDialog
+        open={isReturnOpen}
+        onOpenChange={setIsReturnOpen}
+        allocationId={asset.current_allocation_id || ""}
+        assetName={asset.name}
+        assetTag={asset.asset_tag}
+        holderName={asset.current_holder_name || "Employee"}
       />
     </div>
   );
