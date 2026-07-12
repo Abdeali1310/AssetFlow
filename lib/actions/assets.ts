@@ -103,7 +103,7 @@ export async function getAssetById(id: string) {
       department:departments(name),
       allocations:asset_allocations(
         *,
-        employee:profiles!asset_allocations_employee_id_fkey(full_name),
+        employee:profiles!asset_allocations_employee_id_fkey(full_name, department_id),
         department:departments!asset_allocations_department_id_fkey(name),
         allocator:profiles!asset_allocations_allocated_by_fkey(full_name)
       ),

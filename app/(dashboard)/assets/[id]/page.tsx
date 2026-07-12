@@ -26,7 +26,7 @@ export default async function AssetDetailPage({ params }: AssetDetailPageProps) 
   // Get active profile role
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, department_id")
     .eq("id", user.id)
     .single();
 
@@ -50,6 +50,8 @@ export default async function AssetDetailPage({ params }: AssetDetailPageProps) 
       categories={categories}
       departments={departments}
       currentUserRole={profile.role as UserRole}
+      currentUserId={user.id}
+      currentUserDeptId={profile.department_id || null}
     />
   );
 }

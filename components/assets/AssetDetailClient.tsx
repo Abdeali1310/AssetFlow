@@ -20,6 +20,7 @@ import {
   RefreshCw,
   FolderOpen,
   History as HistoryIcon,
+  ArrowRightLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +36,7 @@ import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { AssetHistoryTimeline } from "@/components/assets/AssetHistoryTimeline";
 import { AllocateDialog } from "@/components/allocations/AllocateDialog";
 import { ReturnDialog } from "@/components/allocations/ReturnDialog";
+import { TransferRequestDialog } from "@/components/allocations/TransferRequestDialog";
 import { transitionAssetStatus } from "@/lib/actions/assets";
 import { canRegisterAssets } from "@/lib/permissions";
 import type { Asset, AssetCategory, Department, UserRole } from "@/lib/types";
@@ -48,6 +50,8 @@ interface AssetDetailClientProps {
   categories: AssetCategory[];
   departments: Department[];
   currentUserRole: UserRole;
+  currentUserId: string;
+  currentUserDeptId: string | null;
 }
 
 export function AssetDetailClient({
@@ -55,6 +59,8 @@ export function AssetDetailClient({
   categories,
   departments,
   currentUserRole,
+  currentUserId,
+  currentUserDeptId,
 }: AssetDetailClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -70,13 +76,11 @@ export function AssetDetailClient({
   const [isAllocateOpen, setIsAllocateOpen] = useState(false);
   const [isReturnOpen, setIsReturnOpen] = useState(false);
   const [isTransferOpen, setIsTransferOpen] = useState(false);
-  const [transferTarget, setTransferTarget] = useState<{ assetId: string; targetEmployeeId: string } | null>(null);
+  const [prefilledTransferEmployeeId, setPrefilledTransferEmployeeId] = useState<string>("");
 
   const handleOpenTransferRequest = (assetId: string, targetEmployeeId: string) => {
-    setTransferTarget({ assetId, targetEmployeeId });
+    setPrefilledTransferEmployeeId(targetEmployeeId);
     setIsTransferOpen(true);
-    // Task 20 handles TransferRequestDialog. For now, show informational toast.
-    toast.info("Transfer request flow initiated. Complete implementation in Task 20.");
   };
 
   // Confirm Status Dialog State
@@ -168,6 +172,12 @@ export function AssetDetailClient({
   );
 
   const isActiveForMaint = asset.status !== "retired" && asset.status !== "disposed";
+
+  const isCurrentHolder = activeAllocation?.employee_id === currentUserId;
+  const isHolderDeptHead = currentUserRole === "department_head" &&
+    activeAllocation?.employee?.department_id &&
+    activeAllocation.employee.department_id === currentUserDeptId;
+  const canRequestTransfer = isManager || isCurrentHolder || isHolderDeptHead;
 
   return (
     <div className="space-y-6">
@@ -466,6 +476,21 @@ export function AssetDetailClient({
                 </Button>
               )}
 
+              {/* Request Transfer Action (holder, dept head, manager, status=allocated) */}
+              {asset.status === "allocated" && canRequestTransfer && (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setPrefilledTransferEmployeeId("");
+                    setIsTransferOpen(true);
+                  }}
+                  className="text-xs"
+                >
+                  <ArrowRightLeft className="mr-1.5 h-3.5 w-3.5" />
+                  Request Transfer
+                </Button>
+              )}
+
               {/* Book Action (any role, available + bookable) */}
               {asset.status === "available" && asset.is_bookable && (
                 <Button
@@ -620,6 +645,16 @@ export function AssetDetailClient({
         assetName={asset.name}
         assetTag={asset.asset_tag}
         holderName={asset.current_holder_name || "Employee"}
+      />
+
+      {/* Transfer Request Dialog */}
+      <TransferRequestDialog
+        open={isTransferOpen}
+        onOpenChange={setIsTransferOpen}
+        assetId={asset.id}
+        assetTag={asset.asset_tag}
+        assetName={asset.name}
+        prefilledEmployeeId={prefilledTransferEmployeeId}
       />
     </div>
   );
